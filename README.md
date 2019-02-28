@@ -1,0 +1,1 @@
+# gphoto-auto-album-creator
