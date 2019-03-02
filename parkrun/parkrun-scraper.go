@@ -67,7 +67,7 @@ func scrape(url string) (*[]runDetails, error) {
 				log.Fatal(err)
 			}
 			rv := make([]roleVolunteer, 0)
-			for j := 1; j < len(rows); j++ {
+			for j := 0; j < len(rows); j++ {
 				volunteer := rows[j][i]
 				role := rows[j][0]
 				rv = append(rv, roleVolunteer{role: role, volunteer: volunteer})
