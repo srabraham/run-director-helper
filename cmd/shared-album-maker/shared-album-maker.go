@@ -176,7 +176,7 @@ func newOAuthClient(ctx context.Context, config *oauth2.Config) *http.Client {
 	} else {
 		log.Printf("Using cached token %#v from %q", token, cacheFile)
 	}
-
+	log.Printf("Token expires at %v", token.Expiry)
 	return config.Client(ctx, token)
 }
 

@@ -1,4 +1,4 @@
-package main
+package parkrun
 
 import (
 	"fmt"
@@ -13,35 +13,35 @@ const (
 	dateFormat = "2 January 2006"
 )
 
-type roleVolunteer struct {
-	role      string
-	volunteer string
+type RoleVolunteer struct {
+	Role      string
+	Volunteer string
 }
 
-type runDetails struct {
-	date           time.Time
-	roleVolunteers []roleVolunteer
+type EventDetails struct {
+	Date           time.Time
+	RoleVolunteers []RoleVolunteer
 }
 
-func (details runDetails) String() string {
+func (details EventDetails) String() string {
 	roleNames := make([]string, 0)
 	sort.Strings(roleNames)
-	str := fmt.Sprintf("%s [\n", details.date.Format(dateFormat))
-	for _, rv := range details.roleVolunteers {
-		str += fmt.Sprintf("  %s: %s\n", rv.role, rv.volunteer)
+	str := fmt.Sprintf("%s [\n", details.Date.Format(dateFormat))
+	for _, rv := range details.RoleVolunteers {
+		str += fmt.Sprintf("  %s: %s\n", rv.Role, rv.Volunteer)
 	}
 	str += "]"
 	return str
 }
 
-func scrape(url string) (*[]runDetails, error) {
+func FetchFutureRoster(url string) (*[]EventDetails, error) {
 
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
 		return nil, err
 	}
 
-	roster := make([]runDetails, 0)
+	roster := make([]EventDetails, 0)
 	doc.Find("#rosterTable").Each(func(i int, s *goquery.Selection) {
 		headers := make([]string, 0)
 		rows := make([][]string, 0)
@@ -66,25 +66,15 @@ func scrape(url string) (*[]runDetails, error) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			rv := make([]roleVolunteer, 0)
+			rv := make([]RoleVolunteer, 0)
 			for j := 0; j < len(rows); j++ {
 				volunteer := rows[j][i]
 				role := rows[j][0]
-				rv = append(rv, roleVolunteer{role: role, volunteer: volunteer})
+				rv = append(rv, RoleVolunteer{Role: role, Volunteer: volunteer})
 			}
-			roster = append(roster, runDetails{date: t, roleVolunteers: rv})
+			roster = append(roster, EventDetails{Date: t, RoleVolunteers: rv})
 		}
 
 	})
 	return &roster, nil
-}
-
-func main() {
-	result, err := scrape("http://www.parkrun.us/southbouldercreek/futureroster/")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for _, v := range *result {
-		fmt.Println(v)
-	}
 }
