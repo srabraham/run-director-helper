@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -12,12 +13,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var nextEvent parkrun.EventDetails
+	time.Date(result[0].Date)
 	for _, v := range result {
-		if v.Date.After(time.Now()) {
-			nextEvent = v
-			break
-		}
+		fmt.Println(v)
 	}
-	log.Printf("Next event is\n%v", nextEvent)
 }

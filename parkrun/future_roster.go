@@ -1,6 +1,8 @@
 package parkrun
 
 import (
+	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -16,11 +18,18 @@ const (
 	dateFormat = "2 January 2006"
 )
 
+var (
+	parkrunTime = 9 * time.Hour
+	location    = flag.String("location", "America/Denver", "Time zone in which the parkrun occurs")
+)
+
+// RoleVolunteer is a pair of a role and a volunteer.
 type RoleVolunteer struct {
 	Role      string
 	Volunteer string
 }
 
+// EventDetails gives a run date and a list of the volunteers for that run.
 type EventDetails struct {
 	Date           time.Time
 	RoleVolunteers []RoleVolunteer
@@ -29,7 +38,7 @@ type EventDetails struct {
 func (details EventDetails) String() string {
 	roleNames := make([]string, 0)
 	sort.Strings(roleNames)
-	str := fmt.Sprintf("%s [\n", details.Date.Format(dateFormat))
+	str := fmt.Sprintf("%s [\n", details.Date.Format(time.RFC3339))
 	for _, rv := range details.RoleVolunteers {
 		str += fmt.Sprintf("  %s: %s\n", rv.Role, rv.Volunteer)
 	}
@@ -37,6 +46,7 @@ func (details EventDetails) String() string {
 	return str
 }
 
+// FetchFutureRoster gets the volunteer rosters from the provided URL.
 func FetchFutureRoster(url string) ([]EventDetails, error) {
 	resp, e := http.Get(url)
 	if e != nil {
@@ -47,7 +57,10 @@ func FetchFutureRoster(url string) ([]EventDetails, error) {
 }
 
 func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
-
+	loc, err := time.LoadLocation(*location)
+	if err != nil {
+		return nil, err
+	}
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
 		return nil, err
@@ -74,10 +87,11 @@ func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 		})
 
 		for i := 1; i < len(headers); i++ {
-			t, err := time.Parse(dateFormat, headers[i])
+			t, err := time.ParseInLocation(dateFormat, headers[i], loc)
 			if err != nil {
 				log.Fatal(err)
 			}
+			t = t.Add(parkrunTime)
 			rv := make([]RoleVolunteer, 0)
 			for j := 0; j < len(rows); j++ {
 				volunteer := rows[j][i]
@@ -88,5 +102,8 @@ func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 		}
 
 	})
+	if len(roster) == 0 {
+		return nil, errors.New("couldn't find a roster")
+	}
 	return roster, nil
 }

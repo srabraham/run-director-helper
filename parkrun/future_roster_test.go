@@ -110,10 +110,14 @@ func TestSuccess(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	// TODO assertions
+	loc, err := time.LoadLocation(*location)
+	if err != nil {
+		t.Error(err)
+	}
 	res1 := results[1]
-	expectedDate := time.Date(2019, time.March, 9, 0, 0, 0, 0, time.UTC)
-	if res1.Date != expectedDate {
+	expectedDateMidnight := time.Date(2019, time.March, 9, 0, 0, 0, 0, loc)
+	expectedDate := expectedDateMidnight.Add(parkrunTime)
+	if !res1.Date.Equal(expectedDate) {
 		t.Errorf("Expected %v, got %v", expectedDate, res1.Date)
 	}
 	if res1.RoleVolunteers[0].Role != "Run Director" {
