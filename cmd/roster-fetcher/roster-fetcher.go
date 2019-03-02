@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, v := range *result {
+	for _, v := range result {
 		fmt.Println(v)
 	}
 }

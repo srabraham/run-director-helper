@@ -37,7 +37,7 @@ func (details EventDetails) String() string {
 	return str
 }
 
-func FetchFutureRoster(url string) (*[]EventDetails, error) {
+func FetchFutureRoster(url string) ([]EventDetails, error) {
 	resp, e := http.Get(url)
 	if e != nil {
 		return nil, e
@@ -46,7 +46,7 @@ func FetchFutureRoster(url string) (*[]EventDetails, error) {
 	return fetchFutureRoster(resp.Body)
 }
 
-func fetchFutureRoster(html io.Reader) (*[]EventDetails, error) {
+func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
@@ -88,5 +88,5 @@ func fetchFutureRoster(html io.Reader) (*[]EventDetails, error) {
 		}
 
 	})
-	return &roster, nil
+	return roster, nil
 }

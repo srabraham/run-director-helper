@@ -3,6 +3,7 @@ package parkrun
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestSuccess(t *testing.T) {
@@ -59,7 +60,7 @@ func TestSuccess(t *testing.T) {
       </tr>
       <tr>
          <th bgcolor="#FFFFAA"><a href="http://example.com" class="voltask" target="_blank" title="click for description">Finish Tokens</a></th>
-         <td>Matthew BALL</td>
+         <td>Matty MATTHEWS</td>
          <td/>
          <td/>
          <td/>
@@ -107,7 +108,24 @@ func TestSuccess(t *testing.T) {
 
 	results, err := fetchFutureRoster(strings.NewReader(html))
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 	// TODO assertions
+	res1 := results[1]
+	expectedDate := time.Date(2019, time.March, 9, 0, 0, 0, 0, time.UTC)
+	if res1.Date != expectedDate {
+		t.Errorf("Expected %v, got %v", expectedDate, res1.Date)
+	}
+	if res1.RoleVolunteers[0].Role != "Run Director" {
+		t.Errorf("Wrong! %v", res1.RoleVolunteers[0])
+	}
+	if res1.RoleVolunteers[0].Volunteer != "Peter PEPPER" {
+		t.Errorf("Wrong! %v", res1.RoleVolunteers[0])
+	}
+	if res1.RoleVolunteers[2].Role != "Timekeeper" {
+		t.Errorf("Wrong! %v", res1.RoleVolunteers[2])
+	}
+	if res1.RoleVolunteers[2].Volunteer != "" {
+		t.Errorf("Wrong! %v", res1.RoleVolunteers[2])
+	}
 }
