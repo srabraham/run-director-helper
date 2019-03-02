@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -8,13 +9,17 @@ import (
 	"github.com/srabraham/run-director-helper/parkrun"
 )
 
+var (
+	futureRosterURL = flag.String("future-roster-url", "http://www.parkrun.us/southbouldercreek/futureroster/", "URL for a parkrun future roster page")
+)
+
 func main() {
-	result, err := parkrun.FetchFutureRoster("http://www.parkrun.us/southbouldercreek/futureroster/")
+	roster, err := parkrun.FetchFutureRoster(*futureRosterURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var nextEvent parkrun.EventDetails
-	for _, v := range result {
+	for _, v := range roster.SortedEvents {
 		if v.Date.After(time.Now()) {
 			nextEvent = v
 			break

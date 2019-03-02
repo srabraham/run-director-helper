@@ -106,17 +106,17 @@ func TestSuccess(t *testing.T) {
    </tbody>
 </table>`
 
-	results, err := fetchFutureRoster(strings.NewReader(html))
+	roster, err := fetchFutureRoster(strings.NewReader(html))
 	if err != nil {
 		t.Error(err)
 	}
-	loc, err := time.LoadLocation(*location)
+	loc, err := time.LoadLocation(*eventLocation)
 	if err != nil {
 		t.Error(err)
 	}
-	res1 := results[1]
+	res1 := roster.SortedEvents[1]
 	expectedDateMidnight := time.Date(2019, time.March, 9, 0, 0, 0, 0, loc)
-	expectedDate := expectedDateMidnight.Add(parkrunTime)
+	expectedDate := expectedDateMidnight.Add(*eventTime)
 	if !res1.Date.Equal(expectedDate) {
 		t.Errorf("Expected %v, got %v", expectedDate, res1.Date)
 	}

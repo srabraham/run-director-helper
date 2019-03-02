@@ -8,12 +8,12 @@ import (
 )
 
 func main() {
-	result, err := parkrun.FetchFutureRoster("http://www.parkrun.us/southbouldercreek/futureroster/")
+	roster, err := parkrun.FetchFutureRoster("http://www.parkrun.us/southbouldercreek/futureroster/")
 	if err != nil {
 		log.Fatal(err)
 	}
 	var nextEvent parkrun.EventDetails
-	for _, v := range result {
+	for _, v := range roster.SortedEvents {
 		if v.Date.After(time.Now()) {
 			nextEvent = v
 			break

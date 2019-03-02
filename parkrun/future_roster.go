@@ -19,10 +19,8 @@ const (
 )
 
 var (
-	// The duration after midnight local time when the event is held.
-	parkrunTime = 9 * time.Hour
-	// The timezone in which the event is held.
-	location = flag.String("location", "America/Denver", "Time zone in which the parkrun occurs")
+	eventLocation = flag.String("location", "America/Denver", "Time zone in which the parkrun occurs")
+	eventTime     = flag.Duration("event-time", 9*time.Hour, "The duration after midnight local time when the event is held")
 )
 
 // RoleVolunteer is a pair of a role and a volunteer.
@@ -35,6 +33,10 @@ type RoleVolunteer struct {
 type EventDetails struct {
 	Date           time.Time
 	RoleVolunteers []RoleVolunteer
+}
+
+type FutureRoster struct {
+	SortedEvents []EventDetails
 }
 
 func (details EventDetails) VolunteersForRole(role string) []string {
@@ -59,23 +61,23 @@ func (details EventDetails) String() string {
 }
 
 // FetchFutureRoster gets the volunteer rosters from the provided URL.
-func FetchFutureRoster(url string) ([]EventDetails, error) {
+func FetchFutureRoster(url string) (FutureRoster, error) {
 	resp, e := http.Get(url)
 	if e != nil {
-		return nil, e
+		return FutureRoster{}, e
 	}
 	defer resp.Body.Close()
 	return fetchFutureRoster(resp.Body)
 }
 
-func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
-	loc, err := time.LoadLocation(*location)
+func fetchFutureRoster(html io.Reader) (FutureRoster, error) {
+	loc, err := time.LoadLocation(*eventLocation)
 	if err != nil {
-		return nil, err
+		return FutureRoster{}, err
 	}
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
-		return nil, err
+		return FutureRoster{}, err
 	}
 
 	roster := make([]EventDetails, 0)
@@ -103,7 +105,7 @@ func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			t = t.Add(parkrunTime)
+			t = t.Add(*eventTime)
 			rv := make([]RoleVolunteer, 0)
 			for j := 0; j < len(rows); j++ {
 				volunteer := rows[j][i]
@@ -115,7 +117,7 @@ func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 
 	})
 	if len(roster) == 0 {
-		return nil, errors.New("couldn't find a roster")
+		return FutureRoster{}, errors.New("couldn't find a roster")
 	}
-	return roster, nil
+	return FutureRoster{SortedEvents: roster}, nil
 }
