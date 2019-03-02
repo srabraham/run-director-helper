@@ -18,12 +18,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var nextEvent parkrun.EventDetails
-	for _, v := range roster.SortedEvents {
-		if v.Date.After(time.Now()) {
-			nextEvent = v
-			break
-		}
+	nextEvent, err := roster.FirstEventAfter(time.Now())
+	if err != nil {
+		log.Fatal(err)
 	}
 	nextRd := nextEvent.VolunteersForRole("Run Director")
 	log.Printf("Next event is\n%v", nextEvent)

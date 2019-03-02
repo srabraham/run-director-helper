@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	// DateFormat is the format used on the future roster web pages.
 	DateFormat = "2 January 2006"
 )
 
@@ -35,10 +36,22 @@ type EventDetails struct {
 	RoleVolunteers []RoleVolunteer
 }
 
+// FutureRoster is a list of events scraped from a future roster web page.
 type FutureRoster struct {
 	SortedEvents []EventDetails
 }
 
+// FirstEventAfter finds the first event in the roster after the provided time.
+func (fr FutureRoster) FirstEventAfter(t time.Time) (EventDetails, error) {
+	for _, v := range fr.SortedEvents {
+		if v.Date.After(time.Now()) {
+			return v, nil
+		}
+	}
+	return EventDetails{}, errors.New("Found no events on future roster after " + t.String())
+}
+
+// VolunteersForRole returns the volunteer(s) for the provided role name.
 func (details EventDetails) VolunteersForRole(role string) []string {
 	volunteers := make([]string, 0)
 	for _, rv := range details.RoleVolunteers {
