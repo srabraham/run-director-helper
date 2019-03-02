@@ -15,12 +15,14 @@ import (
 )
 
 const (
-	dateFormat = "2 January 2006"
+	DateFormat = "2 January 2006"
 )
 
 var (
+	// The duration after midnight local time when the event is held.
 	parkrunTime = 9 * time.Hour
-	location    = flag.String("location", "America/Denver", "Time zone in which the parkrun occurs")
+	// The timezone in which the event is held.
+	location = flag.String("location", "America/Denver", "Time zone in which the parkrun occurs")
 )
 
 // RoleVolunteer is a pair of a role and a volunteer.
@@ -33,6 +35,16 @@ type RoleVolunteer struct {
 type EventDetails struct {
 	Date           time.Time
 	RoleVolunteers []RoleVolunteer
+}
+
+func (details EventDetails) VolunteersForRole(role string) []string {
+	volunteers := make([]string, 0)
+	for _, rv := range details.RoleVolunteers {
+		if rv.Role == role && rv.Volunteer != "" {
+			volunteers = append(volunteers, rv.Volunteer)
+		}
+	}
+	return volunteers
 }
 
 func (details EventDetails) String() string {
@@ -87,7 +99,7 @@ func fetchFutureRoster(html io.Reader) ([]EventDetails, error) {
 		})
 
 		for i := 1; i < len(headers); i++ {
-			t, err := time.ParseInLocation(dateFormat, headers[i], loc)
+			t, err := time.ParseInLocation(DateFormat, headers[i], loc)
 			if err != nil {
 				log.Fatal(err)
 			}
