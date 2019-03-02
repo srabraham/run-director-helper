@@ -1,4 +1,4 @@
-module github.com/srabraham/gphoto-auto-album-creator
+module github.com/srabraham/run-director-helper
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.0

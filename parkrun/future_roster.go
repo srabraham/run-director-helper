@@ -2,8 +2,11 @@ package parkrun
 
 import (
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -35,8 +38,17 @@ func (details EventDetails) String() string {
 }
 
 func FetchFutureRoster(url string) (*[]EventDetails, error) {
+	resp, e := http.Get(url)
+	if e != nil {
+		return nil, e
+	}
+	defer resp.Body.Close()
+	return fetchFutureRoster(resp.Body)
+}
 
-	doc, err := goquery.NewDocument(url)
+func fetchFutureRoster(html io.Reader) (*[]EventDetails, error) {
+
+	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +67,7 @@ func FetchFutureRoster(url string) (*[]EventDetails, error) {
 			role := s.Find("th a").Text()
 			row = append(row, role)
 			s.Find("td").Each(func(i int, s *goquery.Selection) {
-				volunteer := s.Text()
+				volunteer := strings.Trim(s.Text(), "\n ")
 				row = append(row, volunteer)
 			})
 			rows = append(rows, row)

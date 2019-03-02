@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/srabraham/gphoto-auto-album-creator/parkrun"
+	"github.com/srabraham/run-director-helper/parkrun"
 )
 
 func main() {
