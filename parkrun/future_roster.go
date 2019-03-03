@@ -65,7 +65,7 @@ func (details EventDetails) VolunteersForRole(role string) []string {
 func (details EventDetails) String() string {
 	roleNames := make([]string, 0)
 	sort.Strings(roleNames)
-	str := fmt.Sprintf("%s [\n", details.Date.Format(time.RFC3339))
+	str := fmt.Sprintf("%s [\n", details.Date.Format("2006-01-02"))
 	for _, rv := range details.RoleVolunteers {
 		str += fmt.Sprintf("  %s: %s\n", rv.Role, rv.Volunteer)
 	}

@@ -14,7 +14,7 @@ import (
 
 var (
 	sharedAlbumName = flag.String("shared-album-name", "", "Name for shared album to retrieve or create")
-	destEmail       = flag.String("dest-email", "", "Destination email address")
+	dstEmail        = flag.String("dst-email", "", "Destination email address")
 )
 
 func createAlbumAndSendEmail(photosSvc *photoslibrary.Service, gmailSvc *gmail.Service) {
@@ -46,7 +46,7 @@ func createAlbumAndSendEmail(photosSvc *photoslibrary.Service, gmailSvc *gmail.S
 				"To: %s\r\n"+
 				"Subject: Shared album: %s\r\n"+
 				"\r\nCreated a shared album named %s at %s",
-			*destEmail, *sharedAlbumName, *sharedAlbumName, shareableURL)))
+			*dstEmail, *sharedAlbumName, *sharedAlbumName, shareableURL)))
 
 	_, err = gmail.NewUsersMessagesService(gmailSvc).Send("me",
 		&gmail.Message{Raw: rawEmail}).Do()
@@ -62,8 +62,8 @@ func main() {
 	if *sharedAlbumName == "" {
 		log.Fatal("Must set a --shared-album-name")
 	}
-	if *destEmail == "" {
-		log.Fatal("Must set a --dest-email")
+	if *dstEmail == "" {
+		log.Fatal("Must set a --dstEmail")
 	}
 
 	if err := googleapis.AddScope(gmail.GmailSendScope,
