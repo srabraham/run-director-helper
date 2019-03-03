@@ -32,8 +32,9 @@ var (
 		"Name of a file containing just the project's OAuth 2.0 Client Secret from https://developers.google.com/console.")
 	cacheToken = flag.Bool("cachetoken", true, "cache the OAuth 2.0 token")
 
-	scopes      = make([]string, 0)
-	oauthClient *http.Client
+	scopes        = make([]string, 0)
+	tokenFileName = "gauth-tok"
+	oauthClient   *http.Client
 )
 
 func AddScope(newScopes ...string) error {
@@ -41,6 +42,14 @@ func AddScope(newScopes ...string) error {
 		return errors.New("Add scopes prior to calling GetClient()")
 	}
 	scopes = append(scopes, newScopes...)
+	return nil
+}
+
+func SetTokenFileName(name string) error {
+	if oauthClient != nil {
+		return errors.New("Set token file name prior to calling GetClient()")
+	}
+	tokenFileName = name
 	return nil
 }
 
@@ -78,7 +87,7 @@ func tokenCacheFile(config *oauth2.Config) string {
 	hash.Write([]byte(config.ClientID))
 	hash.Write([]byte(config.ClientSecret))
 	hash.Write([]byte(strings.Join(config.Scopes, " ")))
-	fn := fmt.Sprintf("gphoto-tok%v", hash.Sum32())
+	fn := fmt.Sprintf("%s%v", tokenFileName, hash.Sum32())
 	return filepath.Join(osUserCacheDir(), url.QueryEscape(fn))
 }
 

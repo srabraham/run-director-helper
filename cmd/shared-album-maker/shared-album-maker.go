@@ -72,7 +72,9 @@ func main() {
 		photoslibrary.PhotoslibrarySharingScope); err != nil {
 		log.Fatal(err)
 	}
-
+	if err := googleapis.SetTokenFileName("sharedalbummaker-tok"); err != nil {
+		log.Fatal(err)
+	}
 	client, err := googleapis.GetClient()
 	if err != nil {
 		log.Fatal(err)

@@ -10,23 +10,24 @@ import (
 	"github.com/srabraham/run-director-helper/googleapis"
 	"github.com/srabraham/run-director-helper/parkrun"
 	"google.golang.org/api/gmail/v1"
-	"google.golang.org/api/photoslibrary/v1"
 )
 
 var (
 	futureRosterURL     = flag.String("future-roster-url", "http://www.parkrun.us/southbouldercreek/futureroster/", "URL for a parkrun future roster page")
 	necessaryVolunteers = flag.String("necessary-volunteers", "Run Director,Equipment Storage and Delivery,Timekeeper,Barcode Scanning,Finish Tokens,Marshal,Marshal", "Comma-separated list of required volunteer positions, possibly including duplicates")
+	destinationEmail    = flag.String("destination-email", "", "Email address to which to send the reminder")
 )
 
 func main() {
 	flag.Parse()
+	if *destinationEmail == "" {
+		log.Fatal("Must set a destination-email")
+	}
 
-	// TODO: we don't need all these scopes, but I need to make this binary
-	// store a differently-named oauth token to avoid needing to manually re-auth.
-	if err := googleapis.AddScope(gmail.GmailSendScope,
-		photoslibrary.PhotoslibraryAppendonlyScope,
-		photoslibrary.PhotoslibraryReadonlyScope,
-		photoslibrary.PhotoslibrarySharingScope); err != nil {
+	if err := googleapis.AddScope(gmail.GmailSendScope); err != nil {
+		log.Fatal(err)
+	}
+	if err := googleapis.SetTokenFileName("gmailsend-tok"); err != nil {
 		log.Fatal(err)
 	}
 	googleClient, err := googleapis.GetClient()
@@ -83,7 +84,7 @@ func main() {
 	log.Printf("Email subject\n%s", subject)
 	log.Printf("Email message\n%s", message)
 
-	if err = googleapis.SendEmail(googleClient, "me", "me", "seanabraham@gmail.com", subject, message); err != nil {
+	if err = googleapis.SendEmail(googleClient, "me", "me", *destinationEmail, subject, message); err != nil {
 		log.Fatal(err)
 	}
 }
