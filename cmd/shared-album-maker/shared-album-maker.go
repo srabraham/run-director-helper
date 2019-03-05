@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/base64"
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/srabraham/run-director-helper/googleapis"
 
@@ -13,12 +13,16 @@ import (
 )
 
 var (
-	sharedAlbumName = flag.String("shared-album-name", "", "Name for shared album to retrieve or create")
-	dstEmail        = flag.String("dst-email", "", "Destination email address")
+	sharedAlbumName  = flag.String("shared-album-name", "", "Name for shared album to retrieve or create")
+	destinationEmail = flag.String("destination-email", "", "Email address to which to send the album link")
 )
 
-func createAlbumAndSendEmail(photosSvc *photoslibrary.Service, gmailSvc *gmail.Service) {
-	log.Printf("New to create new album '%s'", *sharedAlbumName)
+func createAndShareAlbum(googleClient *http.Client) string {
+	photosSvc, err := photoslibrary.New(googleClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Creating new album '%s'", *sharedAlbumName)
 	resp, err := photosSvc.Albums.Create(
 		&photoslibrary.CreateAlbumRequest{
 			Album: &photoslibrary.Album{Title: *sharedAlbumName}}).Do()
@@ -39,18 +43,12 @@ func createAlbumAndSendEmail(photosSvc *photoslibrary.Service, gmailSvc *gmail.S
 	}
 	shareableURL := shareResponse.ShareInfo.ShareableUrl
 	log.Printf("Successfully shared album: %s", shareableURL)
+	return shareableURL
+}
 
-	rawEmail := base64.StdEncoding.EncodeToString(
-		[]byte(fmt.Sprintf(
-			"From: 'me'\r\n"+
-				"To: %s\r\n"+
-				"Subject: Shared album: %s\r\n"+
-				"\r\nCreated a shared album named %s at %s",
-			*dstEmail, *sharedAlbumName, *sharedAlbumName, shareableURL)))
-
-	_, err = gmail.NewUsersMessagesService(gmailSvc).Send("me",
-		&gmail.Message{Raw: rawEmail}).Do()
-	if err != nil {
+func sendSharingEmail(googleClient *http.Client, shareableURL string) {
+	msg := fmt.Sprintf("\r\nCreated a shared album named %s at %s", *sharedAlbumName, shareableURL)
+	if err := googleapis.SendEmail(googleClient, "me", "me", *destinationEmail, "Shared album: "+*sharedAlbumName, msg); err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Successfully sent email")
@@ -62,7 +60,7 @@ func main() {
 	if *sharedAlbumName == "" {
 		log.Fatal("Must set a --shared-album-name")
 	}
-	if *dstEmail == "" {
+	if *destinationEmail == "" {
 		log.Fatal("Must set a --dstEmail")
 	}
 
@@ -83,11 +81,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	gmailSvc, err := gmail.New(client)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Print("Querying for shared albums with the target name")
+	log.Print("Querying to find any shared albums with the target name")
 	resp, err := photosSvc.SharedAlbums.List().Do()
 	if err != nil {
 		log.Fatal(err)
@@ -104,6 +98,7 @@ func main() {
 	if containsTargetName {
 		log.Printf("Found album with name '%s'. Aborting...", *sharedAlbumName)
 	} else {
-		createAlbumAndSendEmail(photosSvc, gmailSvc)
+		shareableURL := createAndShareAlbum(client)
+		sendSharingEmail(client, shareableURL)
 	}
 }
