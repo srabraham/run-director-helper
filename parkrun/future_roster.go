@@ -25,6 +25,7 @@ var (
 )
 
 // RoleVolunteer is a pair of a role and a volunteer.
+// The Volunteer may be empty if no volunteer is yet assigned.
 type RoleVolunteer struct {
 	Role      string
 	Volunteer string

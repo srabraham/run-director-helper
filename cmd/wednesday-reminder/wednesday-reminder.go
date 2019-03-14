@@ -18,6 +18,30 @@ var (
 	destinationEmail    = flag.String("destination-email", "", "Email address to which to send the reminder")
 )
 
+func missingVolunteers(nextEvent parkrun.EventDetails) string {
+	necessaryVolunteersCounts := make(map[string]int)
+	for _, v := range strings.Split(*necessaryVolunteers, ",") {
+		necessaryVolunteersCounts[v]++
+	}
+	for _, rv := range nextEvent.RoleVolunteers {
+		// Empty string implies the role is vacant
+		if len(rv.Volunteer) == 0 {
+			continue
+		}
+		if necessaryVolunteersCounts[rv.Role] > 0 {
+			necessaryVolunteersCounts[rv.Role]--
+		}
+	}
+	missingVolunteersStrs := make([]string, 0)
+	for k, v := range necessaryVolunteersCounts {
+		if v > 0 {
+			missingVolunteersStrs = append(missingVolunteersStrs, fmt.Sprintf("%d %s", v, k))
+		}
+	}
+	missingVolunteersMsg := strings.Join(missingVolunteersStrs, ", ")
+	return missingVolunteersMsg
+}
+
 func main() {
 	flag.Parse()
 	if *destinationEmail == "" {
@@ -44,22 +68,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	necessaryVolunteersCounts := make(map[string]int)
-	for _, v := range strings.Split(*necessaryVolunteers, ",") {
-		necessaryVolunteersCounts[v]++
-	}
-	for _, rv := range nextEvent.RoleVolunteers {
-		if necessaryVolunteersCounts[rv.Role] > 0 {
-			necessaryVolunteersCounts[rv.Role]--
-		}
-	}
-	missingVolunteersStrs := make([]string, 0)
-	for k, v := range necessaryVolunteersCounts {
-		if v > 0 {
-			missingVolunteersStrs = append(missingVolunteersStrs, fmt.Sprintf("%d %s", v, k))
-		}
-	}
-	missingVolunteersMsg := strings.Join(missingVolunteersStrs, ", ")
+	missingVolunteersMsg := missingVolunteers(nextEvent)
 
 	nextRd := nextEvent.VolunteersForRole("Run Director")
 	dateStr := nextEvent.Date.Format("2006-01-02")
