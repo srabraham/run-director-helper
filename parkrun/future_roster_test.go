@@ -133,3 +133,35 @@ func TestSuccess(t *testing.T) {
 		t.Errorf("Wrong! %v", res1.RoleVolunteers[2])
 	}
 }
+
+func assertNextEventTime(t *testing.T, fr FutureRoster, afterTime time.Time, expectedTime time.Time) {
+	testEvent, err := fr.FirstEventAfter(afterTime)
+	if err != nil {
+		t.Error(err)
+	}
+	if testEvent.Date != expectedTime {
+		t.Errorf("Expected testEvent.Date == %v, got %v", expectedTime, testEvent.Date)
+	}
+}
+
+func TestFirstEventAfter(t *testing.T) {
+	loc, err := time.LoadLocation("America/Inuvik")
+	if err != nil {
+		t.Error(err)
+	}
+	time0 := time.Date(2012, time.November, 12, 9, 0, 0, 0, loc)
+	time1 := time.Date(2012, time.November, 19, 9, 0, 0, 0, loc)
+	fr := FutureRoster{[]EventDetails{
+		{Date: time0},
+		{Date: time1},
+	}}
+
+	beforeTime0 := time0.Add(time.Second * -1)
+	assertNextEventTime(t, fr, beforeTime0, time0)
+
+	isTime0 := time0
+	assertNextEventTime(t, fr, isTime0, time1)
+
+	afterTime0 := time0.Add(time.Second * 1)
+	assertNextEventTime(t, fr, afterTime0, time1)
+}

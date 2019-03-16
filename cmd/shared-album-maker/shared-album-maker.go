@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/srabraham/run-director-helper/parkrun"
-
 	"github.com/srabraham/run-director-helper/googleapis"
+	"github.com/srabraham/run-director-helper/parkrun"
 
 	gmail "google.golang.org/api/gmail/v1"
 	photoslibrary "google.golang.org/api/photoslibrary/v1"
@@ -82,7 +81,10 @@ func getAlbumName() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	nextEvent, err := fr.FirstEventAfter(time.Now())
+	yesterday := time.Now().Add(-24 * time.Hour)
+	// Use yesterday. This allows the program to be run up to 24 hours an event start,
+	// while still referring to that event rather than next week's event.
+	nextEvent, err := fr.FirstEventAfter(yesterday)
 	if err != nil {
 		log.Fatal(err)
 	}

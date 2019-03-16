@@ -45,7 +45,7 @@ type FutureRoster struct {
 // FirstEventAfter finds the first event in the roster after the provided time.
 func (fr FutureRoster) FirstEventAfter(t time.Time) (EventDetails, error) {
 	for _, v := range fr.SortedEvents {
-		if v.Date.After(time.Now()) {
+		if v.Date.After(t) {
 			return v, nil
 		}
 	}
