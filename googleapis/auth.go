@@ -15,7 +15,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"time"
 
@@ -72,14 +71,15 @@ func GetClient() (*http.Client, error) {
 }
 
 func osUserCacheDir() string {
-	switch runtime.GOOS {
-	case "darwin":
-		return filepath.Join(os.Getenv("HOME"), "Library", "Caches")
-	case "linux", "freebsd":
-		return filepath.Join(os.Getenv("HOME"), ".cache")
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		log.Fatalf("Error getting UserCacheDir: %v", err)
 	}
-	log.Printf("TODO: osUserCacheDir on GOOS %q", runtime.GOOS)
-	return "."
+	subDir := filepath.Join(cacheDir, "OAuthTokens")
+	if err := os.MkdirAll(subDir, 0770); err != nil {
+		log.Fatalf("Failed getting or making cache dir: %v", err)
+	}
+	return subDir
 }
 
 func tokenCacheFile(config *oauth2.Config) string {
