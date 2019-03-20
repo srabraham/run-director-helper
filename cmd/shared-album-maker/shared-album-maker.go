@@ -10,6 +10,7 @@ import (
 	"github.com/srabraham/run-director-helper/googleapis"
 	"github.com/srabraham/run-director-helper/parkrun"
 
+	docs "google.golang.org/api/docs/v1"
 	gmail "google.golang.org/api/gmail/v1"
 	photoslibrary "google.golang.org/api/photoslibrary/v1"
 )
@@ -17,7 +18,8 @@ import (
 var (
 	destinationEmail = flag.String("destination-email", "", "Email address to which to send the album link")
 	futureRosterURL  = flag.String("future-roster-url", "http://www.parkrun.us/southbouldercreek/futureroster/", "URL for a parkrun future roster page")
-	latestResultsURL = flag.String("latest-results-url", "http://www.parkrun.us/southbouldercreek/results/latestresults/", "URL for a parkrun latest resutls page")
+	latestResultsURL = flag.String("latest-results-url", "http://www.parkrun.us/southbouldercreek/results/latestresults/", "URL for a parkrun latest results page")
+	albumDocID       = flag.String("album-doc-id", "1fCvOX4sUiKOrXvuRE9pd0K40qFO1eCaP0wxoRF1I2YY", "ID of a Google Doc ID that will contain the album links")
 )
 
 func getAlbumIDIfExists(googleClient *http.Client, albumName string) string {
@@ -98,6 +100,47 @@ func getAlbumName() string {
 	return fmt.Sprintf("SBC parkrun #%d (%s)", nextEventNumber, nextEventDateStr)
 }
 
+func updateDoc(googleClient *http.Client, albumName string, shareableURL string) {
+	docsSvc, err := docs.New(googleClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+	newText := albumName + "\n"
+	// Put the new link on the first line.
+	insertionIndex := int64(1)
+	resp, err := docsSvc.Documents.BatchUpdate(
+		*albumDocID,
+		&docs.BatchUpdateDocumentRequest{
+			Requests: []*docs.Request{
+				{InsertText: &docs.InsertTextRequest{
+					Location: &docs.Location{
+						Index: insertionIndex,
+					},
+					Text: newText,
+				}},
+				{UpdateTextStyle: &docs.UpdateTextStyleRequest{
+					Fields: "link",
+					Range: &docs.Range{
+						StartIndex: insertionIndex,
+						EndIndex:   insertionIndex + int64(len(newText)),
+					},
+					TextStyle: &docs.TextStyle{
+						Link: &docs.Link{
+							Url: shareableURL,
+						},
+					},
+				}},
+			},
+		}).Do()
+	log.Printf("Resp = %v", resp)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	flag.Parse()
 
@@ -110,7 +153,8 @@ func main() {
 	if err := googleapis.AddScope(gmail.GmailSendScope,
 		photoslibrary.PhotoslibraryAppendonlyScope,
 		photoslibrary.PhotoslibraryReadonlyScope,
-		photoslibrary.PhotoslibrarySharingScope); err != nil {
+		photoslibrary.PhotoslibrarySharingScope,
+		docs.DocumentsScope); err != nil {
 		log.Fatal(err)
 	}
 	if err := googleapis.SetTokenFileName("sharedalbummaker-tok"); err != nil {
@@ -126,5 +170,6 @@ func main() {
 	} else {
 		shareableURL := createAndShareAlbum(client, albumName)
 		sendSharingEmail(client, albumName, shareableURL)
+		updateDoc(client, albumName, shareableURL)
 	}
 }
