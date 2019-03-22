@@ -136,6 +136,7 @@ func updateDoc(googleClient *http.Client, albumName string, shareableURL string)
 			},
 		}).Do()
 	log.Printf("Resp = %v", resp)
+	log.Println("Updated the Google Doc with the new album URL")
 	if err != nil {
 		log.Fatal(err)
 	}
