@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/srabraham/google-oauth-helper/googleauth"
 	"github.com/srabraham/run-director-helper/googleapis"
 	"github.com/srabraham/run-director-helper/parkrun"
 	"google.golang.org/api/gmail/v1"
@@ -48,13 +49,13 @@ func main() {
 		log.Fatal("Must set a destination-email")
 	}
 
-	if err := googleapis.AddScope(gmail.GmailSendScope); err != nil {
+	if err := googleauth.AddScope(gmail.GmailSendScope); err != nil {
 		log.Fatal(err)
 	}
-	if err := googleapis.SetTokenFileName("gmailsend-tok"); err != nil {
+	if err := googleauth.SetTokenFileName("gmailsend-tok"); err != nil {
 		log.Fatal(err)
 	}
-	googleClient, err := googleapis.GetClient()
+	googleClient, err := googleauth.GetClient()
 	if err != nil {
 		log.Fatal(err)
 	}
