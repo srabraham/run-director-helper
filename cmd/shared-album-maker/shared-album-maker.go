@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/srabraham/google-oauth-helper/googleauth"
 	"github.com/srabraham/run-director-helper/googleapis"
 	"github.com/srabraham/run-director-helper/parkrun"
 
@@ -136,6 +137,7 @@ func updateDoc(googleClient *http.Client, albumName string, shareableURL string)
 			},
 		}).Do()
 	log.Printf("Resp = %v", resp)
+	log.Println("Updated the Google Doc with the new album URL")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -150,17 +152,17 @@ func main() {
 
 	albumName := getAlbumName()
 
-	if err := googleapis.AddScope(gmail.GmailSendScope,
+	if err := googleauth.AddScope(gmail.GmailSendScope,
 		photoslibrary.PhotoslibraryAppendonlyScope,
 		photoslibrary.PhotoslibraryReadonlyScope,
 		photoslibrary.PhotoslibrarySharingScope,
 		docs.DocumentsScope); err != nil {
 		log.Fatal(err)
 	}
-	if err := googleapis.SetTokenFileName("sharedalbummaker-tok"); err != nil {
+	if err := googleauth.SetTokenFileName("sharedalbummaker-tok"); err != nil {
 		log.Fatal(err)
 	}
-	client, err := googleapis.GetClient()
+	client, err := googleauth.GetClient()
 	if err != nil {
 		log.Fatal(err)
 	}
