@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	futureRosterURL = "/futureroster/"
 	// DateFormat is the format used on the future roster web pages.
 	DateFormat = "2 January 2006"
 )
@@ -74,9 +75,13 @@ func (details EventDetails) String() string {
 	return str
 }
 
+func FutureRosterURL(basePrURL string) string {
+	return basePrURL + futureRosterURL
+}
+
 // FetchFutureRoster gets the volunteer rosters from the provided URL.
-func FetchFutureRoster(url string) (FutureRoster, error) {
-	resp, e := http.Get(url)
+func FetchFutureRoster(basePrURL string) (FutureRoster, error) {
+	resp, e := http.Get(basePrURL + futureRosterURL)
 	if e != nil {
 		return FutureRoster{}, e
 	}

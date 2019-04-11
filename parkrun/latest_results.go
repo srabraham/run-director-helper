@@ -10,12 +10,16 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
+const (
+	latestURL = "/results/latestresults/"
+)
+
 var (
 	parkrunNumberMatcher = regexp.MustCompile("(?s)^.+\\sparkrun\\s#[[:space:]]*([0-9]+).*$")
 )
 
-func NextEventNumber(url string) (int, error) {
-	resp, err := http.Get(url)
+func NextEventNumber(prBaseURL string) (int, error) {
+	resp, err := http.Get(prBaseURL + latestURL)
 	if err != nil {
 		return -1, err
 	}

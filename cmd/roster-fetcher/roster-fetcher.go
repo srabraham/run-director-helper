@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	roster, err := parkrun.FetchFutureRoster("http://www.parkrun.us/southbouldercreek/futureroster/")
+	roster, err := parkrun.FetchFutureRoster("http://www.parkrun.us/southbouldercreek")
 	if err != nil {
 		log.Fatal(err)
 	}

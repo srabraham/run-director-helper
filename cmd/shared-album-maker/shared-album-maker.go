@@ -18,8 +18,7 @@ import (
 
 var (
 	destinationEmail = flag.String("destination-email", "", "Email address to which to send the album link")
-	futureRosterURL  = flag.String("future-roster-url", "http://www.parkrun.us/southbouldercreek/futureroster/", "URL for a parkrun future roster page")
-	latestResultsURL = flag.String("latest-results-url", "http://www.parkrun.us/southbouldercreek/results/latestresults/", "URL for a parkrun latest results page")
+	prBaseURL        = flag.String("pr-base-url", "http://www.parkrun.us/southbouldercreek", "Base URL for parkrun event")
 	albumDocID       = flag.String("album-doc-id", "1fCvOX4sUiKOrXvuRE9pd0K40qFO1eCaP0wxoRF1I2YY", "ID of a Google Doc ID that will contain the album links")
 )
 
@@ -80,7 +79,7 @@ func sendSharingEmail(googleClient *http.Client, albumName string, shareableURL 
 }
 
 func getAlbumName() string {
-	fr, err := parkrun.FetchFutureRoster(*futureRosterURL)
+	fr, err := parkrun.FetchFutureRoster(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -93,7 +92,7 @@ func getAlbumName() string {
 	}
 	nextEventDateStr := nextEvent.Date.Format("2006-01-02")
 	log.Printf("Next event is on %s", nextEventDateStr)
-	lastEventNumber, err := parkrun.NextEventNumber(*latestResultsURL)
+	lastEventNumber, err := parkrun.NextEventNumber(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}

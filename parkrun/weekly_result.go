@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	weeklyResultsURL = "/results/weeklyresults"
 	headerPos        = "Pos"
 	headerParkrunner = "parkrunner"
 	headerTime       = "Time"
@@ -40,8 +41,8 @@ type EventRunners struct {
 	Runners  []Runner
 }
 
-func GetRunners(resultsURL string, eventNum int32) (*EventRunners, error) {
-	resp, err := http.Get(fmt.Sprintf("%s/?runSeqNumber=%d", resultsURL, eventNum))
+func GetRunners(prBaseURL string, eventNum int32) (*EventRunners, error) {
+	resp, err := http.Get(fmt.Sprintf("%s%s/?runSeqNumber=%d", prBaseURL, weeklyResultsURL, eventNum))
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +79,6 @@ func getRunners(html io.Reader, eventNum int32) (*EventRunners, error) {
 			headers = append(headers, s.Text())
 		})
 
-		log.Printf("Header = %v", headers)
 		if !slicesEqual(headers, expectedHeader) {
 			resultsErr = fmt.Errorf("Headers != expected headers: [%v] != [%v]", headers, expectedHeader)
 			return

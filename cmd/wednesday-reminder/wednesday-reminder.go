@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	futureRosterURL     = flag.String("future-roster-url", "http://www.parkrun.us/southbouldercreek/futureroster/", "URL for a parkrun future roster page")
+	prBaseURL           = flag.String("pr-base-url", "http://www.parkrun.us/southbouldercreek", "Base URL for parkrun event")
 	necessaryVolunteers = flag.String("necessary-volunteers", "Run Director,Equipment Storage and Delivery,Timekeeper,Barcode Scanning,Finish Tokens,Marshal,Marshal", "Comma-separated list of required volunteer positions, possibly including duplicates")
 	destinationEmail    = flag.String("destination-email", "", "Email address to which to send the reminder")
 )
@@ -60,7 +60,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	roster, err := parkrun.FetchFutureRoster(*futureRosterURL)
+	roster, err := parkrun.FetchFutureRoster(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -89,7 +89,7 @@ func main() {
 		message += "We have all the required roles filled for the next run!\n\n"
 	}
 	message += fmt.Sprintf("Here is the roster as of now:\n%v\n\n", nextEvent)
-	message += fmt.Sprintf("You can see the roster on the web at %s", *futureRosterURL)
+	message += fmt.Sprintf("You can see the roster on the web at %s", parkrun.FutureRosterURL(*prBaseURL))
 
 	log.Printf("Email subject\n%s", subject)
 	log.Printf("Email message\n%s", message)
