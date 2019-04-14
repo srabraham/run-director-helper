@@ -46,6 +46,9 @@ func GetRunners(prBaseURL string, eventNum int32) (*EventRunners, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Failed to get weekly result:\n%v", resp)
+	}
 	defer resp.Body.Close()
 	return getRunners(resp.Body, eventNum)
 }

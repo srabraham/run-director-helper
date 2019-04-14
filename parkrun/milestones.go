@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GetUpcomingMilestones(prBaseURL string, maxPastEvents int) []Runner {
+func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets time.Duration) []Runner {
 	ne, err := NextEventNumber(prBaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -20,7 +20,7 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int) []Runner {
 			log.Print("Breaking due to hitting event 1")
 			break
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(timeBetweenGets)
 		log.Printf("Getting results for event %d", eventNum)
 		er, err := GetRunners(prBaseURL, int32(eventNum))
 		if err != nil {
