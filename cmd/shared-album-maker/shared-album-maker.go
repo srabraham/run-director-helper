@@ -92,7 +92,7 @@ func getAlbumName() string {
 	}
 	nextEventDateStr := nextEvent.Date.Format("2006-01-02")
 	log.Printf("Next event is on %s", nextEventDateStr)
-	lastEventNumber, err := parkrun.NextEventNumber(*prBaseURL)
+	lastEventNumber, err := parkrun.LastEventNumber(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}

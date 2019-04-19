@@ -18,16 +18,16 @@ var (
 	parkrunNumberMatcher = regexp.MustCompile("(?s)^.+\\sparkrun\\s#[[:space:]]*([0-9]+).*$")
 )
 
-func NextEventNumber(prBaseURL string) (int, error) {
+func LastEventNumber(prBaseURL string) (int, error) {
 	resp, err := http.Get(prBaseURL + latestURL)
 	if err != nil {
 		return -1, err
 	}
 	defer resp.Body.Close()
-	return nextEventNumber(resp.Body)
+	return lastEventNumber(resp.Body)
 }
 
-func nextEventNumber(html io.Reader) (int, error) {
+func lastEventNumber(html io.Reader) (int, error) {
 	doc, err := goquery.NewDocumentFromReader(html)
 	if err != nil {
 		return -1, err

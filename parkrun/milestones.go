@@ -7,15 +7,14 @@ import (
 )
 
 func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets time.Duration) []Runner {
-	ne, err := NextEventNumber(prBaseURL)
+	le, err := LastEventNumber(prBaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	eventNum := ne - 1
+	eventNum := le
 	idToRecentRunCount := make(map[int64]int)
 	idToRunner := make(map[int64]Runner)
 	for i := 0; i < maxPastEvents; i++ {
-		eventNum--
 		if eventNum <= 0 {
 			log.Print("Breaking due to hitting event 1")
 			break
@@ -30,6 +29,7 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets 
 			idToRecentRunCount[r.AthleteID]++
 			idToRunner[r.AthleteID] = r
 		}
+		eventNum--
 	}
 	milestones := make([]Runner, 0)
 	for id, rCount := range idToRecentRunCount {
