@@ -3,6 +3,7 @@ package parkrun
 import (
 	"fmt"
 	"log"
+	"sort"
 	"time"
 )
 
@@ -12,7 +13,6 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets 
 		log.Fatal(err)
 	}
 	eventNum := le
-	idToRecentRunCount := make(map[int64]int)
 	idToRunner := make(map[int64]Runner)
 	for i := 0; i < maxPastEvents; i++ {
 		if eventNum <= 0 {
@@ -26,19 +26,28 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets 
 			log.Fatal(err)
 		}
 		for _, r := range er.Runners {
-			idToRecentRunCount[r.AthleteID]++
 			idToRunner[r.AthleteID] = r
 		}
 		eventNum--
 	}
+	sortedRunners := make([]Runner, 0, len(idToRunner))
+	for _, r := range idToRunner {
+		sortedRunners = append(sortedRunners, r)
+	}
+	sort.Slice(sortedRunners, func(i, j int) bool {
+		if sortedRunners[i].TotalRuns != sortedRunners[j].TotalRuns {
+			return sortedRunners[i].TotalRuns < sortedRunners[j].TotalRuns
+		}
+		return sortedRunners[i].AthleteID < sortedRunners[j].AthleteID
+	})
 	milestones := make([]Runner, 0)
-	for id, rCount := range idToRecentRunCount {
-		txt := fmt.Sprintf("%d runs for %s (%d)", idToRunner[id].TotalRuns, idToRunner[id].Name, idToRunner[id].AthleteID)
-		if importantNumber(rCount + 1) {
-			fmt.Printf("Milestone: %s\n", txt)
-			milestones = append(milestones, idToRunner[id])
-		} else if importantNumber(rCount+2) || importantNumber(rCount+3) {
-			fmt.Printf("Near milestone: %s\n", txt)
+	for _, r := range sortedRunners {
+		txt := fmt.Sprintf("%d runs for %s (%d)", r.TotalRuns, r.Name, r.AthleteID)
+		if importantNumber(r.TotalRuns + 1) {
+			fmt.Printf("One run until milestone: %s\n", txt)
+			milestones = append(milestones, r)
+		} else if importantNumber(r.TotalRuns+2) {
+			fmt.Printf("Two runs until milestone: %s\n", txt)
 		} else {
 			fmt.Printf("Not near milestone: %s\n", txt)
 		}
@@ -47,5 +56,5 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets 
 }
 
 func importantNumber(n int) bool {
-	return n == 10 || n == 25 || n%50 == 0
+	return n == 10 || n%25 == 0
 }

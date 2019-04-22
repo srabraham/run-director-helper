@@ -33,7 +33,7 @@ var (
 type Runner struct {
 	Name      string
 	AthleteID int64
-	TotalRuns int32
+	TotalRuns int
 }
 
 type EventRunners struct {
@@ -121,7 +121,7 @@ func getRunners(html io.Reader, eventNum int32) (*EventRunners, error) {
 							resultsErr = err
 							return
 						}
-						r.TotalRuns = int32(tr)
+						r.TotalRuns = tr
 					}
 				}
 			})
