@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// Basic happy path test
 func TestSuccess(t *testing.T) {
 	html := `
 <h2>Example text!</h2>
