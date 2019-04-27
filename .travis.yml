@@ -7,6 +7,9 @@ language: go
 go:
   - 1.12.x
 
+env:
+  - GO111MODULE=on
+
 # Only clone the most recent commit.
 git:
   depth: 1
