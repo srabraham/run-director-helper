@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	parkrunNumberMatcher = regexp.MustCompile("(?s)^.+\\sparkrun\\s#[[:space:]]*([0-9]+).*$")
+	parkrunNumberMatcher = regexp.MustCompile(`(?s)^.+\sparkrun\s#[[:space:]]*([0-9]+).*$`)
 )
 
 func LastEventNumber(prBaseURL string) (int, error) {
