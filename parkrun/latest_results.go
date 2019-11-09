@@ -15,7 +15,7 @@ const (
 )
 
 var (
-	parkrunNumberMatcher = regexp.MustCompile(`(?s)^.+\sparkrun\s#[[:space:]]*([0-9]+).*$`)
+	parkrunNumberMatcher = regexp.MustCompile(`^#([0-9]+)$`)
 )
 
 func LastEventNumber(prBaseURL string) (int, error) {
@@ -33,18 +33,18 @@ func lastEventNumber(html io.Reader) (int, error) {
 		return -1, err
 	}
 	lastRunNumber := 0
-	doc.Find("h2").Each(func(i int, s *goquery.Selection) {
-		matches := parkrunNumberMatcher.FindStringSubmatch(s.Text())
-		if len(matches) < 2 {
-			log.Printf("Failed to find parkrun number in %s", s.Text())
-			lastRunNumber = -1
-			return
-		}
-		lastRunNumber, err = strconv.Atoi(matches[1])
-		if err != nil {
-			log.Printf("Failed to convert %s to an int", matches[1])
-			lastRunNumber = -1
-			return
+	doc.Find("div").Each(func(i int, s *goquery.Selection) {
+		if s.HasClass("Results-header") {
+			s.Find("span").Each(func(i1 int, s1 *goquery.Selection) {
+				matches := parkrunNumberMatcher.FindStringSubmatch(s1.Text())
+				if len(matches) == 2 {
+					lastRunNumber, err = strconv.Atoi(matches[1])
+					if err != nil {
+						log.Printf("Failed to find parkrun number in %s", s.Text())
+						return
+					}
+				}
+			})
 		}
 	})
 	return lastRunNumber, nil
