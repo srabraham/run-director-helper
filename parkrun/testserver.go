@@ -133,7 +133,7 @@ func StartTestServer() *httptest.Server {
 					return
 				}
 				if r.URL.String() == "/results/latestresults/" {
-					fmt.Fprintf(w, latestResultsContents)
+					fmt.Fprint(w, latestResultsContents)
 					return
 				}
 			}
