@@ -3,23 +3,25 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/srabraham/run-director-helper/albumdb"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/srabraham/google-oauth-helper/googleauth"
 	"github.com/srabraham/run-director-helper/googleapis"
+	"github.com/srabraham/run-director-helper/googleapis/generatedapivendor/photoslibrary/v1"
 	"github.com/srabraham/run-director-helper/parkrun"
 
-	docs "google.golang.org/api/docs/v1"
-	gmail "google.golang.org/api/gmail/v1"
-	photoslibrary "google.golang.org/api/photoslibrary/v1"
+	"google.golang.org/api/docs/v1"
+	"google.golang.org/api/gmail/v1"
 )
 
 var (
 	destinationEmail = flag.String("destination-email", "", "Email address to which to send the album link")
 	prBaseURL        = flag.String("pr-base-url", "http://www.parkrun.us/southbouldercreek", "Base URL for parkrun event")
-	albumDocID       = flag.String("album-doc-id", "1fCvOX4sUiKOrXvuRE9pd0K40qFO1eCaP0wxoRF1I2YY", "ID of a Google Doc ID that will contain the album links")
+	dbProjectId      = flag.String("db-project-id", "sbcparkrun", "Name of Firestore GCP project.")
+	dbCollectionName = flag.String("db-collection-name", "albumyears", "Name of Firestore collection in which to save albums")
 )
 
 func getAlbumIDIfExists(googleClient *http.Client, albumName string) string {
@@ -78,7 +80,15 @@ func sendSharingEmail(googleClient *http.Client, albumName string, shareableURL 
 	log.Printf("Successfully sent email")
 }
 
-func getAlbumName() string {
+func getNextEventNumber() int64 {
+	lastEventNumber, err := parkrun.LastEventNumber(*prBaseURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return lastEventNumber + 1
+}
+
+func getNextEventDate() string {
 	fr, err := parkrun.FetchFutureRoster(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -90,56 +100,11 @@ func getAlbumName() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	nextEventDateStr := nextEvent.Date.Format("2006-01-02")
-	log.Printf("Next event is on %s", nextEventDateStr)
-	lastEventNumber, err := parkrun.LastEventNumber(*prBaseURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	nextEventNumber := lastEventNumber + 1
-	return fmt.Sprintf("SBC parkrun #%d (%s)", nextEventNumber, nextEventDateStr)
+	return nextEvent.Date.Format("2006-01-02")
 }
 
-func updateDoc(googleClient *http.Client, albumName string, shareableURL string) {
-	docsSvc, err := docs.New(googleClient)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
-		log.Fatal(err)
-	}
-	newText := albumName + "\n"
-	// Put the new link on the first line.
-	insertionIndex := int64(1)
-	resp, err := docsSvc.Documents.BatchUpdate(
-		*albumDocID,
-		&docs.BatchUpdateDocumentRequest{
-			Requests: []*docs.Request{
-				{InsertText: &docs.InsertTextRequest{
-					Location: &docs.Location{
-						Index: insertionIndex,
-					},
-					Text: newText,
-				}},
-				{UpdateTextStyle: &docs.UpdateTextStyleRequest{
-					Fields: "link",
-					Range: &docs.Range{
-						StartIndex: insertionIndex,
-						EndIndex:   insertionIndex + int64(len(newText)),
-					},
-					TextStyle: &docs.TextStyle{
-						Link: &docs.Link{
-							Url: shareableURL,
-						},
-					},
-				}},
-			},
-		}).Do()
-	log.Printf("Resp = %v", resp)
-	log.Println("Updated the Google Doc with the new album URL")
-	if err != nil {
-		log.Fatal(err)
-	}
+func getAlbumName(nextEventNumber int64, nextEventDate string) string {
+	return fmt.Sprintf("SBC parkrun #%d (%s)", nextEventNumber, nextEventDate)
 }
 
 func main() {
@@ -149,7 +114,9 @@ func main() {
 		log.Fatal("Must set a --destination-email")
 	}
 
-	albumName := getAlbumName()
+	nextEventNumber := getNextEventNumber()
+	nextEventDate := getNextEventDate()
+	albumName := getAlbumName(nextEventNumber, nextEventDate)
 
 	if err := googleauth.AddScope(gmail.GmailSendScope,
 		photoslibrary.PhotoslibraryAppendonlyScope,
@@ -171,6 +138,6 @@ func main() {
 	} else {
 		shareableURL := createAndShareAlbum(client, albumName)
 		sendSharingEmail(client, albumName, shareableURL)
-		updateDoc(client, albumName, shareableURL)
+		albumdb.AddAlbumToDb(nextEventDate, albumName, shareableURL, *dbProjectId, *dbCollectionName, nextEventNumber)
 	}
 }
