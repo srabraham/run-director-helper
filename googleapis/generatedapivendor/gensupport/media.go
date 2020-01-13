@@ -126,13 +126,13 @@ func newMultipartReader(parts []typeReader) *multipartReader {
 			w, err := mpw.CreatePart(typeHeader(part.typ))
 			if err != nil {
 				mpw.Close()
-				pw.CloseWithError(fmt.Errorf("googleapi: CreatePart failed: %v", err))
+				_ = pw.CloseWithError(fmt.Errorf("googleapi: CreatePart failed: %v", err))
 				return
 			}
 			_, err = io.Copy(w, part.Reader)
 			if err != nil {
 				mpw.Close()
-				pw.CloseWithError(fmt.Errorf("googleapi: Copy failed: %v", err))
+				_ = pw.CloseWithError(fmt.Errorf("googleapi: Copy failed: %v", err))
 				return
 			}
 		}
