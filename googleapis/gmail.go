@@ -1,8 +1,10 @@
 package googleapis
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
+	"google.golang.org/api/option"
 	"log"
 	"net/http"
 
@@ -10,7 +12,7 @@ import (
 )
 
 func SendEmail(authedClient *http.Client, senderUserID, from, to, subject, message string) error {
-	gmailSvc, err := gmail.New(authedClient)
+	gmailSvc, err := gmail.NewService(context.Background(), option.WithHTTPClient(authedClient))
 	if err != nil {
 		return err
 	}
