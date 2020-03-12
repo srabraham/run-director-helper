@@ -87,6 +87,8 @@ github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFR
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/srabraham/google-oauth-helper v0.0.0-20190319023854-61358e3b7543 h1:9Ye9CKnaCnljMidiwFCAD/hy9u3UZb4FT8aj78QtCCA=
 github.com/srabraham/google-oauth-helper v0.0.0-20190319023854-61358e3b7543/go.mod h1:RM12RqCsr3llrvGu7e8i/SCcrLEtpyHG/KseO2MMYOI=
+github.com/srabraham/run-director-helper/cloudfunctions/fetchalbums v0.0.0-20200113143622-91673fe79ce1 h1:kqi3A83JiIl+zsmyHnjjoM3WaBLgEBcJi/9mpe7Ha/w=
+github.com/srabraham/run-director-helper/cloudfunctions/fetchalbums v0.0.0-20200113143622-91673fe79ce1/go.mod h1:S5cGqVuQqpsomK9Jajk73KbIgj7sxWYx5wBuMuRrK5w=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 go.opencensus.io v0.19.1/go.mod h1:gug0GbSHa8Pafr0d2urOSgoXHZ6x/RUlaiT0d9pqb4A=

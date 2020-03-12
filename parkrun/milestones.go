@@ -46,7 +46,7 @@ func GetUpcomingMilestones(prBaseURL string, maxPastEvents int, timeBetweenGets 
 		if importantNumber(r.TotalRuns + 1) {
 			fmt.Printf("One run until milestone: %s\n", txt)
 			milestones = append(milestones, r)
-		} else if importantNumber(r.TotalRuns+2) {
+		} else if importantNumber(r.TotalRuns + 2) {
 			fmt.Printf("Two runs until milestone: %s\n", txt)
 		} else {
 			fmt.Printf("Not near milestone: %s\n", txt)

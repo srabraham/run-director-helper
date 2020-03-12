@@ -18,10 +18,12 @@ import (
 )
 
 var (
-	destinationEmail = flag.String("destination-email", "", "Email address to which to send the album link")
-	prBaseURL        = flag.String("pr-base-url", "http://www.parkrun.us/southbouldercreek", "Base URL for parkrun event")
-	dbProjectId      = flag.String("db-project-id", "sbcparkrun", "Name of Firestore GCP project.")
-	dbCollectionName = flag.String("db-collection-name", "albumyears", "Name of Firestore collection in which to save albums")
+	destinationEmail    = flag.String("destination-email", "", "Email address to which to send the album link")
+	prBaseURL           = flag.String("pr-base-url", "http://www.parkrun.us/southbouldercreek", "Base URL for parkrun event")
+	dbProjectId         = flag.String("db-project-id", "sbcparkrun", "Name of Firestore GCP project.")
+	dbCollectionName    = flag.String("db-collection-name", "albumyears", "Name of Firestore collection in which to save albums")
+	eventNumberOverride = flag.Int64("event-number-override", 0, "Override for event number")
+	eventDateOverride   = flag.String("event-date-override", "", "Override for event date")
 )
 
 func getAlbumIDIfExists(googleClient *http.Client, albumName string) string {
@@ -81,6 +83,9 @@ func sendSharingEmail(googleClient *http.Client, albumName string, shareableURL 
 }
 
 func getNextEventNumber() int64 {
+	if *eventNumberOverride != 0 {
+		return *eventNumberOverride
+	}
 	lastEventNumber, err := parkrun.LastEventNumber(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -89,6 +94,9 @@ func getNextEventNumber() int64 {
 }
 
 func getNextEventDate() string {
+	if *eventDateOverride != "" {
+		return *eventDateOverride
+	}
 	fr, err := parkrun.FetchFutureRoster(*prBaseURL)
 	if err != nil {
 		log.Fatal(err)
@@ -113,6 +121,9 @@ func main() {
 	if *destinationEmail == "" {
 		log.Fatal("Must set a --destination-email")
 	}
+
+	// Will fail the program if firebase connection can't be made.
+	albumdb.TestDbConnection(*dbProjectId)
 
 	nextEventNumber := getNextEventNumber()
 	nextEventDate := getNextEventDate()

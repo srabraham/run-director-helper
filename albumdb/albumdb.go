@@ -15,6 +15,16 @@ var (
 	yearRe = regexp.MustCompile("[0-9]{4}")
 )
 
+func TestDbConnection(dbProjectId string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	client, err := firestore.NewClient(ctx, dbProjectId)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+}
+
 func AddAlbumToDb(parkrunDate, albumName, albumUrl, dbProjectId, dbCollectionName string, runNum int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
