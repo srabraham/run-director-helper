@@ -6,6 +6,7 @@ import (
 	"github.com/srabraham/run-director-helper/albumdb"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/srabraham/google-oauth-helper/googleauth"
@@ -107,6 +108,9 @@ func getNextEventDate() string {
 	nextEvent, err := fr.FirstEventAfter(yesterday)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if strings.ToLower(nextEvent.RoleVolunteers[0].Volunteer) == "no event" {
+		log.Fatalf("no event on %v. aborting...", nextEvent.Date)
 	}
 	return nextEvent.Date.Format("2006-01-02")
 }

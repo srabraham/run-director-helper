@@ -76,7 +76,9 @@ func main() {
 	nextRdStr := strings.Trim(fmt.Sprint(nextRd), "[]")
 
 	subject := ""
-	if len(missingVolunteersMsg) > 0 {
+	if strings.ToLower(nextRdStr) == "no event" {
+		subject = fmt.Sprintf("[Automated] Event cancelled for %v :(", dateStr)
+	} else if len(missingVolunteersMsg) > 0 {
 		subject = fmt.Sprintf("[Automated] Volunteers needed for %v event", dateStr)
 	} else {
 		subject = fmt.Sprintf("[Automated] No additional volunteers needed for %v event", dateStr)
