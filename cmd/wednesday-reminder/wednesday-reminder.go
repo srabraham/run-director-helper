@@ -76,19 +76,26 @@ func main() {
 	nextRdStr := strings.Trim(fmt.Sprint(nextRd), "[]")
 
 	subject := ""
+	cancelled := false
 	if strings.ToLower(nextRdStr) == "no event" {
 		subject = fmt.Sprintf("[Automated] Event cancelled for %v :(", dateStr)
+		cancelled = true
 	} else if len(missingVolunteersMsg) > 0 {
 		subject = fmt.Sprintf("[Automated] Volunteers needed for %v event", dateStr)
 	} else {
 		subject = fmt.Sprintf("[Automated] No additional volunteers needed for %v event", dateStr)
 	}
 
-	message := fmt.Sprintf("Hi run director %s,\n\n", nextRdStr)
-	if len(missingVolunteersMsg) > 0 {
-		message += fmt.Sprintf("We still need volunteers for these roles: %s\n\n", missingVolunteersMsg)
+	var message string
+	if cancelled {
+		message = "The next event is cancelled.\n\n"
 	} else {
-		message += "We have all the required roles filled for the next run!\n\n"
+		message = fmt.Sprintf("Hi run director %s,\n\n", nextRdStr)
+		if len(missingVolunteersMsg) > 0 {
+			message += fmt.Sprintf("We still need volunteers for these roles: %s\n\n", missingVolunteersMsg)
+		} else {
+			message += "We have all the required roles filled for the next run!\n\n"
+		}
 	}
 	message += fmt.Sprintf("Here is the roster as of now:\n%v\n\n", nextEvent)
 	message += fmt.Sprintf("You can see the roster on the web at %s", parkrun.FutureRosterURL(*prBaseURL))
